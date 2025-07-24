@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Segmented Control</title>
+  <style>
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 240px;
+      background-color: #fff;
+      z-index: 1000;
+    }
+
+    .nav img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .toolbar {
+      position: fixed;
+      top: 16px;
+      right: 20px;
+      width: 325px;
+      height: 44px;
+      box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.07);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    html, body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: rgb(255, 255, 255);
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .container-wrapper {
+      height: 100vh;
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container-wrapper::-webkit-scrollbar {
+      display: none;
+    }
+
+    .container {
+      position: relative;
+      height: calc(100vh - 32px);
+      width: calc((100vh - 32px) * 9 / 16);
+      background-color: rgb(255, 255, 255);
+      border-radius: 24px;
+      overflow: hidden;
+      margin: 16px auto;
+      scroll-snap-align: center;
+      flex-shrink: 0;
+    }
+
+    .container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+
+    
+    /* 分段控制组件样式 */
+    .switch {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      width: 44px;
+      height: 24px;
+      background-color: rgba(22, 24, 35, 0.06);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border-radius: 999px;
+      cursor: pointer;
+      padding: 2px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(22, 24, 35, 0.1);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+    }
+
+    .switch:hover {
+      background-color: rgba(22, 24, 35, 0.1);
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .switch-thumb {
+      width: 20px;
+      height: 20px;
+      background-color: white;
+      border-radius: 50%;
+      box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s;
+      margin: 0;
+    }
+
+    .switch.active {
+      background-color: rgb(22, 24, 35);
+      border-color: rgb(22, 24, 35);
+    }
+
+    .switch.active .switch-thumb {
+      transform: translateX(20px);
+      background-color: #fff;
+    }
+
+    .switch.active:hover {
+      background-color: rgb(37, 40, 55);
+    }
+
+    .segmented-control {
+      display: flex;
+      background-color: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border-radius: 999px;
+      padding: 2px;
+      width: fit-content;
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      overflow: hidden;
+      gap: 4px;
+      transition: top 0.3s;
+    }
+    
+    .segmented-control-option {
+      position: relative;
+      border: none;
+      background: none;
+      padding: 7px 16px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 400;
+      color: rgba(22, 24, 35, 0.75);
+      cursor: pointer;
+      outline: none;
+      z-index: 2;
+      transition: all 400ms cubic-bezier(0.25, 0, 0.25, 1);
+      white-space: nowrap;
+    }
+    
+    .segmented-control-option:hover:not(.selected) {
+      background-color: rgba(22, 24, 35, 0.03);
+    }
+    
+    .segmented-control-option.selected {
+      color: rgb(22, 24, 35);
+      background-color: rgb(255, 255, 255);
+      box-shadow: 0px 1px 2px rgba(22, 24, 35, 0.05);
+    }
+    
+    /* 点的样式 */
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin: 0 auto;
+      background-color: rgba(22, 24, 35, 0.2);
+      display: none;
+      opacity: 0;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      transition: opacity 400ms cubic-bezier(0.25, 0, 0.25, 1), transform 400ms cubic-bezier(0.25, 0, 0.25, 1);
+    }
+    
+    .selected .dot {
+      background-color: #333;
+    }
+    
+    .dots-mode .dot {
+      display: block;
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    
+    /* 文本标签 */
+    .label {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 400ms cubic-bezier(0.25, 0, 0.25, 1), transform 400ms cubic-bezier(0.25, 0, 0.25, 1);
+    }
+    
+    /* 点模式样式 */
+    .dots-mode .segmented-control-option {
+      padding: 7px;
+      min-width: 7px;
+      transition: all 400ms cubic-bezier(0.25, 0, 0.25, 1);
+      background: none;
+    }
+    
+    .dots-mode .label {
+      opacity: 0;
+      transform: translateY(-10px);
+      display: none;
+      transition: opacity 400ms cubic-bezier(0.25, 0, 0.25, 1), transform 400ms cubic-bezier(0.25, 0, 0.25, 1);
+    }
+    
+    .dots-mode .dot {
+      display: block;
+      opacity: 1;
+      transition: opacity 400ms cubic-bezier(0.25, 0, 0.25, 1), transform 400ms cubic-bezier(0.25, 0, 0.25, 1);
+    }
+    
+    .dots-mode .segmented-control-option.selected {
+      background: none;
+      box-shadow: none;
+    }
+
+    .dots-mode .segmented-control-option.selected .dot {
+      background-color: rgba(22, 24, 35, 0.6);
+      box-shadow: none;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    
+
+    
+    /* Hover效果 - 当鼠标悬停时只显示文本 */
+    .dots-mode {
+      transition: all 400ms cubic-bezier(0.25, 0, 0.25, 1);
+    }
+    
+    .dots-mode:hover .segmented-control-option {
+      padding: 7px 16px;
+      min-width: initial;
+      transition: all 400ms cubic-bezier(0.25, 0, 0.25, 1);
+    }
+
+    .dots-mode:hover .segmented-control-option.selected {
+      color: rgb(22, 24, 35);
+      background-color: rgb(255, 255, 255);
+      box-shadow: 0px 1px 2px rgba(22, 24, 35, 0.05);
+    }
+
+    .dots-mode:hover .label {
+      display: inline-block;
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 400ms cubic-bezier(0.25, 0, 0.25, 1), transform 400ms cubic-bezier(0.25, 0, 0.25, 1);
+    }
+    
+    .dots-mode:hover .dot {
+      display: none;
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0);
+      transition: opacity 400ms cubic-bezier(0.25, 0, 0.25, 1), transform 400ms cubic-bezier(0.25, 0, 0.25, 1);
+    }
+    
+
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <img src="Toolbar.png" alt="Toolbar" width="325" height="44">
+  </div>
+  <div class="nav">
+    <img src="Navigation Drawer.png" alt="TikTok Navigation" width="240">
+  </div>
+    <div class="container-wrapper">
+      <div class="container">
+        <img src="https://i.redd.it/mount-rainier-national-park-9-16-2024-v0-hki5ajec0apd1.jpg?width=2860&format=pjpg&auto=webp&s=139a2d515ba7a47f222392c63bb077e6f7831af1" alt="Mount Rainier National Park">
+      </div>
+      <div class="container">
+        <img src="https://i.redd.it/mount-rainier-national-park-9-16-2024-v0-504f5xfc0apd1.jpg?width=3667&format=pjpg&auto=webp&s=64636def81cd32249e45ce45b7f1e007ba84b032" alt="Mount Rainier National Park">
+      </div>
+    </div>
+    <div class="segmented-control" id="segmentedControl">
+      <button class="segmented-control-option selected" data-id="for-you">
+        <span class="label">For You</span>
+        <div class="dot"></div>
+      </button>
+      <button class="segmented-control-option" data-id="following">
+        <span class="label">Following</span>
+        <div class="dot"></div>
+      </button>
+      <button class="segmented-control-option" data-id="friends">
+        <span class="label">Friends</span>
+        <div class="dot"></div>
+      </button>
+    </div>
+
+  <div class="switch" id="positionSwitch">
+    <div class="switch-thumb"></div>
+  </div>
+
+  <script>
+    // 获取DOM元素
+    const segmentedControl = document.getElementById('segmentedControl');
+    const options = segmentedControl.querySelectorAll('.segmented-control-option');
+    const positionSwitch = document.getElementById('positionSwitch');
+
+    // 切换分段控制器位置
+    positionSwitch.addEventListener('click', () => {
+      positionSwitch.classList.toggle('active');
+      segmentedControl.style.top = positionSwitch.classList.contains('active') ? '30px' : '10px';
+    });
+    
+    // 点击选项事件
+    options.forEach(option => {
+      option.addEventListener('click', () => {
+        // 移除之前的选中状态
+        segmentedControl.querySelector('.selected').classList.remove('selected');
+        // 添加新的选中状态
+        option.classList.add('selected');
+      });
+    });
+    
+    // 定义一个变量存储定时器ID
+    let dotsModeTimer;
+    
+    // 切换到点模式的函数
+    function switchToDotMode() {
+      // 添加点模式类
+      segmentedControl.classList.add('dots-mode');
+      // 更新选中背景
+      updateSelectedBackground();
+    }
+    
+    // 初始化：5秒后切换到点模式
+    dotsModeTimer = setTimeout(switchToDotMode, 5000);
+    
+    // 鼠标悬停和移开事件
+    segmentedControl.addEventListener('mouseenter', () => {
+      // 鼠标悬停时，如果有定时器，清除它
+      if (dotsModeTimer) {
+        clearTimeout(dotsModeTimer);
+        dotsModeTimer = null;
+      }
+    });
+    
+    segmentedControl.addEventListener('mouseleave', () => {
+      // 先移除点模式
+      segmentedControl.classList.remove('dots-mode');
+      
+      // 鼠标移开后5秒切换回点模式
+      dotsModeTimer = setTimeout(() => {
+        switchToDotMode();
+      }, 5000);
+    });
+    
+
+  </script>
+</body>
+</html>
