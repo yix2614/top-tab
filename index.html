@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Segmented Control</title>
   <style>
+    :root {
+      --control-top: 31px;
+      --control-hidden-top: -50px;
+    }
     .nav {
       position: fixed;
       top: 0;
@@ -35,7 +39,7 @@
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
       margin: 0;
       padding: 0;
-      background-color: rgb(255, 255, 255);
+      background: none;
       height: 100%;
       overflow: hidden;
     }
@@ -73,13 +77,24 @@
       flex-shrink: 0;
     }
 
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 136px;
+      background-image: url('Top Section.png');
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      z-index: 0;
+    }
+
     .container img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    
-
     
     /* 分段控制组件样式 */
     .switch {
@@ -93,7 +108,7 @@
       -webkit-backdrop-filter: blur(40px);
       border-radius: 999px;
       cursor: pointer;
-      padding: 2px;
+      padding: 0;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
       border: 1px solid rgba(22, 24, 35, 0.1);
@@ -133,147 +148,45 @@
 
     .segmented-control {
       display: flex;
-      background-color: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(40px);
-      -webkit-backdrop-filter: blur(40px);
+      background-color: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-radius: 999px;
-      padding: 2px;
+      padding: 0 8px;
       width: fit-content;
+      height: fit-content;
       position: fixed;
-      top: 10px;
+      top: var(--control-top);
       left: 50%;
       transform: translateX(-50%);
       overflow: hidden;
-      gap: 4px;
-      transition: top 0.3s;
+     
+      transition: top 400ms cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .segmented-control-option {
       position: relative;
       border: none;
       background: none;
-      padding: 7px 16px;
+      padding: 8px 10px;
       border-radius: 999px;
       font-size: 14px;
+      line-height: 130%;
       font-weight: 400;
-      color: rgba(22, 24, 35, 0.75);
+      color: rgba(255, 255, 255, 0.4);
       cursor: pointer;
       outline: none;
       z-index: 2;
-      transition: all 400ms cubic-bezier(0.25, 0, 0.25, 1);
+      transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
       white-space: nowrap;
     }
     
-    .segmented-control-option:hover:not(.selected) {
-      background-color: rgba(22, 24, 35, 0.03);
-    }
-    
     .segmented-control-option.selected {
-      color: rgb(22, 24, 35);
-      background-color: rgb(255, 255, 255);
-      box-shadow: 0px 1px 2px rgba(22, 24, 35, 0.05);
-    }
-    
-    /* 点的样式 */
-    .dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      margin: 0 auto;
-      background-color: rgba(22, 24, 35, 0.2);
-      display: none;
-      opacity: 0;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0);
-      transition: opacity 400ms cubic-bezier(0.25, 0, 0.25, 1), transform 400ms cubic-bezier(0.25, 0, 0.25, 1);
-    }
-    
-    .selected .dot {
-      background-color: #333;
-    }
-    
-    .dots-mode .dot {
-      display: block;
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
-    }
-    
-    /* 文本标签 */
-    .label {
-      display: block;
-      opacity: 1;
-      transform: translateY(0);
-      transition: opacity 400ms cubic-bezier(0.25, 0, 0.25, 1), transform 400ms cubic-bezier(0.25, 0, 0.25, 1);
-    }
-    
-    /* 点模式样式 */
-    .dots-mode .segmented-control-option {
-      padding: 7px;
-      min-width: 7px;
-      transition: all 400ms cubic-bezier(0.25, 0, 0.25, 1);
-      background: none;
-    }
-    
-    .dots-mode .label {
-      opacity: 0;
-      transform: translateY(-10px);
-      display: none;
-      transition: opacity 400ms cubic-bezier(0.25, 0, 0.25, 1), transform 400ms cubic-bezier(0.25, 0, 0.25, 1);
-    }
-    
-    .dots-mode .dot {
-      display: block;
-      opacity: 1;
-      transition: opacity 400ms cubic-bezier(0.25, 0, 0.25, 1), transform 400ms cubic-bezier(0.25, 0, 0.25, 1);
-    }
-    
-    .dots-mode .segmented-control-option.selected {
+      color: rgb(255, 255, 255);
+      font-weight: 500;
       background: none;
       box-shadow: none;
     }
-
-    .dots-mode .segmented-control-option.selected .dot {
-      background-color: rgba(22, 24, 35, 0.6);
-      box-shadow: none;
-      transform: translate(-50%, -50%) scale(1);
-    }
-    
-
-    
-    /* Hover效果 - 当鼠标悬停时只显示文本 */
-    .dots-mode {
-      transition: all 400ms cubic-bezier(0.25, 0, 0.25, 1);
-    }
-    
-    .dots-mode:hover .segmented-control-option {
-      padding: 7px 16px;
-      min-width: initial;
-      transition: all 400ms cubic-bezier(0.25, 0, 0.25, 1);
-    }
-
-    .dots-mode:hover .segmented-control-option.selected {
-      color: rgb(22, 24, 35);
-      background-color: rgb(255, 255, 255);
-      box-shadow: 0px 1px 2px rgba(22, 24, 35, 0.05);
-    }
-
-    .dots-mode:hover .label {
-      display: inline-block;
-      opacity: 1;
-      transform: translateY(0);
-      transition: opacity 400ms cubic-bezier(0.25, 0, 0.25, 1), transform 400ms cubic-bezier(0.25, 0, 0.25, 1);
-    }
-    
-    .dots-mode:hover .dot {
-      display: none;
-      opacity: 0;
-      transform: translate(-50%, -50%) scale(0);
-      transition: opacity 400ms cubic-bezier(0.25, 0, 0.25, 1), transform 400ms cubic-bezier(0.25, 0, 0.25, 1);
-    }
-    
-
   </style>
 </head>
 <body>
@@ -290,20 +203,17 @@
       <div class="container">
         <img src="https://i.redd.it/mount-rainier-national-park-9-16-2024-v0-504f5xfc0apd1.jpg?width=3667&format=pjpg&auto=webp&s=64636def81cd32249e45ce45b7f1e007ba84b032" alt="Mount Rainier National Park">
       </div>
+      <div class="container">
+        <img src="https://lh6.googleusercontent.com/proxy/dnj0HqVR339beraTeChZivkKutXkZ_IHGZw-JvrwB-ezNkWs31NdCaTXEdJ0z3djNIaI0YIkvMRLSDn_GxrFD4iq6bD7cAQxjXDadzRpYRl-8A5e" alt="Mountain Landscape">
+      </div>
+      <div class="container">
+        <img src="https://i0.wp.com/thattravelista.com/wp-content/uploads/2020/05/New-Zealand-Mount-Cook-Lake-Pukaki-9-1.jpg?fit=682%2C1024&ssl=1" alt="Mount Cook Lake Pukaki">
+      </div>
     </div>
     <div class="segmented-control" id="segmentedControl">
-      <button class="segmented-control-option selected" data-id="for-you">
-        <span class="label">For You</span>
-        <div class="dot"></div>
-      </button>
-      <button class="segmented-control-option" data-id="following">
-        <span class="label">Following</span>
-        <div class="dot"></div>
-      </button>
-      <button class="segmented-control-option" data-id="friends">
-        <span class="label">Friends</span>
-        <div class="dot"></div>
-      </button>
+      <button class="segmented-control-option selected" data-id="for-you">For You</button>
+      <button class="segmented-control-option" data-id="following">Following</button>
+      <button class="segmented-control-option" data-id="friends">Friends</button>
     </div>
 
   <div class="switch" id="positionSwitch">
@@ -315,6 +225,9 @@
     const segmentedControl = document.getElementById('segmentedControl');
     const options = segmentedControl.querySelectorAll('.segmented-control-option');
     const positionSwitch = document.getElementById('positionSwitch');
+    const containerWrapper = document.querySelector('.container-wrapper');
+    let lastScrollY = containerWrapper.scrollTop;
+    let selectedTab = 'for-you';
 
     // 切换分段控制器位置
     positionSwitch.addEventListener('click', () => {
@@ -329,43 +242,34 @@
         segmentedControl.querySelector('.selected').classList.remove('selected');
         // 添加新的选中状态
         option.classList.add('selected');
+        selectedTab = option.getAttribute('data-id');
       });
     });
-    
-    // 定义一个变量存储定时器ID
-    let dotsModeTimer;
-    
-    // 切换到点模式的函数
-    function switchToDotMode() {
-      // 添加点模式类
-      segmentedControl.classList.add('dots-mode');
-      // 更新选中背景
-      updateSelectedBackground();
+
+    // 滚动事件监听
+    containerWrapper.addEventListener('scroll', () => {
+      const currentScrollY = containerWrapper.scrollTop;
+      if (selectedTab === 'for-you') {
+        if (currentScrollY > lastScrollY) {
+          // 向下滚动
+          segmentedControl.style.top = 'var(--control-hidden-top)';
+        } else {
+          // 向上滚动
+          segmentedControl.style.top = 'var(--control-top)';
+        }
+      } else {
+        // Following 和 Friends 标签页下，始终显示 control
+        segmentedControl.style.top = 'var(--control-top)';
+      }
+      lastScrollY = currentScrollY;
+    });
+
+    // 初始化：确保在 Following 和 Friends 标签页下显示 control
+    if (selectedTab !== 'for-you') {
+      segmentedControl.style.top = 'var(--control-top)';
     }
     
-    // 初始化：5秒后切换到点模式
-    dotsModeTimer = setTimeout(switchToDotMode, 5000);
     
-    // 鼠标悬停和移开事件
-    segmentedControl.addEventListener('mouseenter', () => {
-      // 鼠标悬停时，如果有定时器，清除它
-      if (dotsModeTimer) {
-        clearTimeout(dotsModeTimer);
-        dotsModeTimer = null;
-      }
-    });
-    
-    segmentedControl.addEventListener('mouseleave', () => {
-      // 先移除点模式
-      segmentedControl.classList.remove('dots-mode');
-      
-      // 鼠标移开后5秒切换回点模式
-      dotsModeTimer = setTimeout(() => {
-        switchToDotMode();
-      }, 5000);
-    });
-    
-
   </script>
 </body>
 </html>
