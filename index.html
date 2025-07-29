@@ -5,6 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Segmented Control</title>
   <style>
+    @font-face {
+      font-family: 'TikTokSansText';
+      src: url('webfonts/TikTokSansText-Regular.woff2') format('woff2'),
+           url('webfonts/TikTokSansText-Regular.woff') format('woff');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'TikTokSansText';
+      src: url('webfonts/TikTokSansText-Medium.woff2') format('woff2'),
+           url('webfonts/TikTokSansText-Medium.woff') format('woff');
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
     :root {
       --control-top: 31px;
       --control-hidden-top: -50px;
@@ -36,7 +52,7 @@
       overflow: hidden;
     }
     html, body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      font-family: 'TikTokSansText', system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
       margin: 0;
       padding: 0;
       background: none;
@@ -77,7 +93,7 @@
       flex-shrink: 0;
     }
 
-    .container::before {
+    .container:not(.special-container)::before {
       content: '';
       position: absolute;
       top: 0;
@@ -88,6 +104,11 @@
       background-size: 100% 100%;
       background-repeat: no-repeat;
       z-index: 0;
+    }
+
+    .special-container {
+      width: 64vw;
+      height: calc(64vw * 9 / 16);
     }
 
     .container img {
@@ -150,7 +171,7 @@
       display: flex;
       background-color: rgba(0, 0, 0, 0.25);
       backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(60px);
       border-radius: 999px;
       padding: 0 8px;
       width: fit-content;
@@ -173,12 +194,21 @@
       font-size: 14px;
       line-height: 130%;
       font-weight: 400;
-      color: rgba(255, 255, 255, 0.4);
+      color: rgba(255, 255, 255, 0.6);
       cursor: pointer;
       outline: none;
       z-index: 2;
-      transition: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+      font-family: 'TikTokSansText', system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      transition: all 400ms cubic-bezier(0.25, 0, 0.25, 1);
       white-space: nowrap;
+      width: 80px;
+      text-align: center;
+      font-synthesis: none;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .segmented-control-option:hover {
+      color: rgba(255, 255, 255, 0.8);
     }
     
     .segmented-control-option.selected {
@@ -203,7 +233,7 @@
       <div class="container">
         <img src="https://i.redd.it/mount-rainier-national-park-9-16-2024-v0-504f5xfc0apd1.jpg?width=3667&format=pjpg&auto=webp&s=64636def81cd32249e45ce45b7f1e007ba84b032" alt="Mount Rainier National Park">
       </div>
-      <div class="container">
+      <div class="container special-container">
         <img src="https://lh6.googleusercontent.com/proxy/dnj0HqVR339beraTeChZivkKutXkZ_IHGZw-JvrwB-ezNkWs31NdCaTXEdJ0z3djNIaI0YIkvMRLSDn_GxrFD4iq6bD7cAQxjXDadzRpYRl-8A5e" alt="Mountain Landscape">
       </div>
       <div class="container">
@@ -246,22 +276,36 @@
       });
     });
 
+    // 获取所有容器
+    const containers = document.querySelectorAll('.container');
+
+    // 检查元素是否在视口中
+    function isElementInViewport(el) {
+      const rect = el.getBoundingClientRect();
+      const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+      const threshold = windowHeight * 0.5; // 50% 阈值
+      
+      return rect.top >= -threshold && rect.top <= threshold;
+    }
+
     // 滚动事件监听
     containerWrapper.addEventListener('scroll', () => {
       const currentScrollY = containerWrapper.scrollTop;
-      if (selectedTab === 'for-you') {
-        if (currentScrollY > lastScrollY) {
-          // 向下滚动
-          segmentedControl.style.top = 'var(--control-hidden-top)';
-        } else {
-          // 向上滚动
-          segmentedControl.style.top = 'var(--control-top)';
-        }
-      } else {
-        // Following 和 Friends 标签页下，始终显示 control
-        segmentedControl.style.top = 'var(--control-top)';
-      }
+      // 始终显示 control
+      segmentedControl.style.top = 'var(--control-top)';
       lastScrollY = currentScrollY;
+
+      // 检查第三个容器是否在视口中
+      const thirdContainer = containers[2];
+      const isThirdVisible = isElementInViewport(thirdContainer);
+      
+      // 根据第三个容器的可见性控制第二和第四个容器的显示
+      containers[1].style.opacity = isThirdVisible ? '0' : '1';
+      containers[3].style.opacity = isThirdVisible ? '0' : '1';
+      
+      // 添加过渡效果
+      containers[1].style.transition = 'opacity 0.3s';
+      containers[3].style.transition = 'opacity 0.3s';
     });
 
     // 初始化：确保在 Following 和 Friends 标签页下显示 control
